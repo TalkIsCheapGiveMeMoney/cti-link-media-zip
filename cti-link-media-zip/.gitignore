@@ -1,5 +1,12 @@
 /target/
 *.DS_Store
+<<<<<<< HEAD
 .project
 .settings*
 .classpath
+=======
+.settings*
+.project
+.classpath
+/bin/
+>>>>>>> branch 'develop' of https://github.com/ti-net/cti-link-media-zip.git

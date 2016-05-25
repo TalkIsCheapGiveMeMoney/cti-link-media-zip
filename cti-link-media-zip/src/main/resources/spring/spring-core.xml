@@ -43,6 +43,18 @@
 
 	<bean id="redisService" class="com.tinet.ctilink.cache.RedisService" />
 	
+	<!-- AWS sqs -->
+	<bean scope="singleton" id="awsCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
+		<constructor-arg index="0" value="${aws.accessKey}"/>
+		<constructor-arg index="1" value="${aws.secretAccessKey}"/>
+	</bean>
+	<bean scope="singleton" id="sqsClient"  class="com.amazonaws.services.sqs.AmazonSQSClient">
+		<constructor-arg index="0" ref="awsCredentials"/>
+	</bean>
+	<bean scope="singleton" id="awsSQSService"  class="com.tinet.ctilink.aws.AwsSQSService">
+		<property name="sqsClient" ref="sqsClient"/>
+	</bean>
+	
 
 	<!-- 注入Spring上下文 -->
 	<bean id="contextUtil" class="com.tinet.ctilink.util.ContextUtil" />
