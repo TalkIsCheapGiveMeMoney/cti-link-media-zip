@@ -17,8 +17,8 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.tinet.ctilink.aws.AwsSQSService;
-import com.tinet.ctilink.json.JSONObject;
-import com.tinet.ctilink.mediazip.inc.Const;
+import com.tinet.ctilink.mediazip.inc.MediaZipConst;
+import com.tinet.ctilink.mediazip.inc.MediaZipMacro;
 import com.tinet.ctilink.util.ContextUtil;
 
 @WebServlet("/interface/upload")
@@ -45,39 +45,40 @@ public class Upload extends HttpServlet {
         PrintWriter out = resp.getWriter();
         
         String enterpriseId = req.getParameter("enterpriseId");
+        String day = req.getParameter("day");
         String ratio = req.getParameter("ratio");
         
         //设置工厂  
         DiskFileItemFactory factory = new DiskFileItemFactory();  
-        String path = Const.LOCAL_UPLOAD_PATH;
+        String path = MediaZipConst.LOCAL_UPLOAD_PATH;
         //设置文件存储位置  
         factory.setRepository(new File(path));  
-        //设置大小，如果文件小于设置大小的话，放入内存中，如果大于的话则放入磁盘中  
-        factory.setSizeThreshold(1024*1024*100);  
+        //设置大小
+        factory.setSizeThreshold(MediaZipConst.MAX_FILE_SIZE);  
      
         ServletFileUpload upload = new ServletFileUpload(factory);  
-        //这里就是中文文件名处理的代码，其实只有一行，serheaderencoding就可以了  
         upload.setHeaderEncoding("utf-8");  
  
         try {  
         	List<FileItem> list = upload.parseRequest(req);  
         	for(FileItem item : list){  
-        		//判断是不是上传的文件，如果不是得到值，并设置到request域中  
-        		//这里的item.getfieldname是得到上传页面上的input上的name  
         		if(item.isFormField()){  
-        			String name = item.getFieldName();  
-        			String value =item.getString("utf-8");  
-        			req.setAttribute(name, value);  
-        		}  
-        		//如果是上传的文件，则取出文件名，  
+
+        		}   
         		else{  
-        			String name = item.getFieldName();  
         			String value = item.getName();  
                     int start = value.lastIndexOf("\\");  
                     String fileName = value.substring(start + 1);  
-                    req.setAttribute(name, fileName);  
                     //写文件到path目录，文件名问filename  
-                  item.write(new File(path,fileName));  
+                    item.write(new File(path,fileName));
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("enterpriseId=").append(enterpriseId).append("\r\n");
+                    sb.append("day=").append(day).append("\r\n");
+                    sb.append("path=").append(path).append("\r\n");
+                    sb.append("file=").append(fileName).append("\r\n");
+                    sb.append("ratio=").append(ratio).append("\r\n");
+
+                    sqsService.sendMessage(sb.toString(), MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL);
              	}  
         	}  
         }catch (FileUploadException e) {  
@@ -85,5 +86,6 @@ public class Upload extends HttpServlet {
         } catch (Exception e) {  
         	e.printStackTrace();  
         }  
+        out.close();
     }
 }
