@@ -1,6 +1,7 @@
 package com.tinet.ctilink.mediazip.servlet;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -24,11 +25,11 @@ import com.tinet.ctilink.util.ContextUtil;
 @WebServlet("/interface/upload")
 public class Upload extends HttpServlet {
 
-	AwsSQSService sqsService;
+	//AwsSQSService sqsService;
 	
 	@Override
 	public void init() throws ServletException {
-		AwsSQSService sqsService = ContextUtil.getBean(AwsSQSService.class);
+		//sqsService = ContextUtil.getBean(AwsSQSService.class);
 	}
 	
     @Override
@@ -44,9 +45,7 @@ public class Upload extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
         PrintWriter out = resp.getWriter();
         
-        String enterpriseId = req.getParameter("enterpriseId");
-        String day = req.getParameter("day");
-        String ratio = req.getParameter("ratio");
+
         
         //设置工厂  
         DiskFileItemFactory factory = new DiskFileItemFactory();  
@@ -58,29 +57,57 @@ public class Upload extends HttpServlet {
      
         ServletFileUpload upload = new ServletFileUpload(factory);  
         upload.setHeaderEncoding("utf-8");  
- 
+        boolean uploaded = false;
+        String fileName = null;
         try {  
         	List<FileItem> list = upload.parseRequest(req);  
         	for(FileItem item : list){  
         		if(item.isFormField()){  
-
+        			String name = item.getFieldName();  
+        			String value =item.getString("utf-8");  
+        			req.setAttribute(name, value);  
         		}   
         		else{  
         			String value = item.getName();  
                     int start = value.lastIndexOf("\\");  
-                    String fileName = value.substring(start + 1);  
+                    fileName = value.substring(start + 1);  
                     //写文件到path目录，文件名问filename  
                     item.write(new File(path,fileName));
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("enterpriseId=").append(enterpriseId).append("\r\n");
-                    sb.append("day=").append(day).append("\r\n");
-                    sb.append("path=").append(path).append("\r\n");
-                    sb.append("file=").append(fileName).append("\r\n");
-                    sb.append("ratio=").append(ratio).append("\r\n");
+                    uploaded = true;
+                    break;
+                    
+             	} 
+        	} 
+        	if(uploaded){
+        		String enterpriseId = req.getAttribute("enterpriseId").toString();
+     	        String day = req.getAttribute("day").toString();
+     	        String ratio = req.getAttribute("ratio").toString();
+     	        String type = req.getAttribute("type").toString();
+     	        
+	        	StringBuilder sb = new StringBuilder();
+	            sb.append("enterprise_id=").append(enterpriseId).append("\r\n");
+	            sb.append("day=").append(day).append("\r\n");
+	            sb.append("path=").append(path).append("\r\n");
+	            sb.append("file=").append(fileName).append("\r\n");
+	            sb.append("ratio=").append(ratio).append("\r\n");
+	            sb.append("type=").append(type).append("\r\n");
+	            sb.append("aws_s3_path=").append(MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET).append("\r\n");
+	            
+	            File file =new File(MediaZipConst.MONITOR_PATH + "/" + fileName);
+	            try{
+	    			if(file.exists()){
 
-                    sqsService.sendMessage(sb.toString(), MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL);
-             	}  
-        	}  
+	    			}else{
+	    				file.createNewFile();	
+	    			}
+	    			FileWriter fileWriter=new FileWriter(file, true);
+	    			fileWriter.write(sb.toString());
+	    			fileWriter.close();
+	    		}catch (Exception e) {
+	    			e.printStackTrace();
+	    		}		
+	            //sqsService.sendMessage(sb.toString(), MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL);
+        	}
         }catch (FileUploadException e) {  
         	e.printStackTrace(); 
         } catch (Exception e) {  

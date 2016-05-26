@@ -31,9 +31,11 @@ public class ApplicationStarter implements ApplicationListener<ContextRefreshedE
 		// 设置JVM的DNS缓存时间
 		// http://docs.amazonaws.cn/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-jvm-ttl.html
 		java.security.Security.setProperty("networkaddress.cache.ttl", "60");
-		MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL = PropertyUtil.getProperty(MediaZipConst.PROPERTY_AWS_MEDIA_ZIP_SQS_URL);
+		//MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL = PropertyUtil.getProperty(MediaZipConst.PROPERTY_AWS_MEDIA_ZIP_SQS_URL);
 		
-		System.out.println("SQS URL:" + MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL);
+		//System.out.println("SQS URL:" + MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL);
+		MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET = PropertyUtil.getProperty(MediaZipConst.PROPERTY_AWS_MEDIA_S3_BUCKET);
+		System.out.println("S3 bucket:" + MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET);
 		logger.info("cti-link-media-zip启动成功");
 		System.out.println("cti-link-media-zip启动成功");
 	}
