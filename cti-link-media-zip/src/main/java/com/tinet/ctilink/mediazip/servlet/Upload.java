@@ -85,18 +85,18 @@ public class Upload extends HttpServlet {
      	        String type = req.getAttribute("type").toString();
      	        
 	        	StringBuilder sb = new StringBuilder();
-	            sb.append("enterprise_id=").append(enterpriseId).append("\r\n");
-	            sb.append("day=").append(day).append("\r\n");
-	            sb.append("path=").append(path).append("\r\n");
-	            sb.append("file=").append(fileName).append("\r\n");
-	            sb.append("ratio=").append(ratio).append("\r\n");
-	            sb.append("type=").append(type).append("\r\n");
-	            sb.append("aws_s3_path=").append(MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET).append("\r\n");
+	            sb.append("enterprise_id=").append(enterpriseId).append("\n");
+	            sb.append("day=").append(day).append("\n");
+	            sb.append("wav_path=").append(path).append("\n");
+	            sb.append("wav_file=").append(fileName).append("\n");
+	            sb.append("ratio=").append(ratio).append("\n");
+	            sb.append("type=").append(type).append("\n");
+	            sb.append("aws_s3_path=").append(MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET).append("\n");
 	            
-	            File file =new File(MediaZipConst.MONITOR_PATH + "/" + fileName);
+	            File file =new File(MediaZipConst.MONITOR_PATH + "/" + fileName.substring(0, fileName.indexOf(".wav")));
 	            try{
 	    			if(file.exists()){
-
+	    				return;
 	    			}else{
 	    				file.createNewFile();	
 	    			}
@@ -114,5 +114,10 @@ public class Upload extends HttpServlet {
         	e.printStackTrace();  
         }  
         out.close();
+    }
+    public static void main(String[] argv){
+    	String fileName = "default.wav";
+    	System.out.println(fileName.substring(0, fileName.indexOf(".wav")));
+    	
     }
 }
