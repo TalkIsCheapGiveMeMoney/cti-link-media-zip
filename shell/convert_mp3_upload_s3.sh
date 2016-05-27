@@ -23,10 +23,16 @@ mkdir -p ${backup_path}
 mkdir -p ${not_upload_nfs_mp3_path}
 mkdir -p ${mp3_path}
 
-convert_mp3_upload_s3() {
-    for monitor_file in $(ls ${monitor_path} | head -n 100)
-    do
-        day=`cat ${monitor_path}/${monitor_file}|grep day|awk -F '=' '{print $2}'`
+core_count=`cat /proc/cpuinfo|grep processor|wc -l`
+convert_core_count=$(( ${core_count} * 4 / 5 ))
+if [ ${convert_core_count} -eq 0 ]; then
+    convert_core_count=1;
+fi
+loop_index=0
+
+do_one(){
+	monitor_file=$1
+	day=`cat ${monitor_path}/${monitor_file}|grep day|awk -F '=' '{print $2}'`
         wav_path=`cat ${monitor_path}/${monitor_file}|grep wav_path|awk -F '=' '{print $2}'`
         enterprise_id=`cat ${monitor_path}/${monitor_file}|grep enterprise_id|awk -F '=' '{print $2}'`
         wav_file=`cat ${monitor_path}/${monitor_file}|grep wav_file|awk -F '=' '{print $2}'`
@@ -62,7 +68,19 @@ convert_mp3_upload_s3() {
         else
             echo "${wav_path}/${wav_file} not exist" 
         fi
-        rm -f ${monitor_path}/${monitor_file}
+	rm -f ${monitor_path}/${monitor_file}
+}
+
+convert_mp3_upload_s3() {
+    for monitor_file in $(ls ${monitor_path} | head -n 100)
+    do
+	if [ ${loop_index} -lt ${convert_core_count} ]; then
+		do_one ${monitor_file} &
+		loop_index=$(( ${loop_index} + 1 ))
+	else
+		wait
+		loop_index=0
+	fi
     done
 }
 
