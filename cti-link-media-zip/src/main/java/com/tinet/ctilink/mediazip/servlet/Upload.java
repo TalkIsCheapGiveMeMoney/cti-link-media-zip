@@ -97,6 +97,10 @@ public class Upload extends HttpServlet {
 	            File file =new File(MediaZipConst.MONITOR_PATH + "/" + fileName.substring(0, fileName.indexOf(".wav")));
 	            try{
 	    			if(file.exists()){
+	    				JSONObject object = new JSONObject();
+	    				object.put("res", -1);
+	    				out.print(object);
+	    		        out.close();
 	    				return;
 	    			}else{
 	    				file.createNewFile();	
@@ -107,6 +111,8 @@ public class Upload extends HttpServlet {
 	    			JSONObject object = new JSONObject();
 	    			object.put("res", 0);
 	    			out.print(object);
+	    			out.close();
+	    			return;
 	    		}catch (Exception e) {
 	    			e.printStackTrace();
 	    		}		
