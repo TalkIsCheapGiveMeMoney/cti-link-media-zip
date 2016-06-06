@@ -18,6 +18,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.tinet.ctilink.aws.AwsSQSService;
+import com.tinet.ctilink.json.JSONObject;
 import com.tinet.ctilink.mediazip.inc.MediaZipConst;
 import com.tinet.ctilink.mediazip.inc.MediaZipMacro;
 import com.tinet.ctilink.util.ContextUtil;
@@ -103,6 +104,9 @@ public class Upload extends HttpServlet {
 	    			FileWriter fileWriter=new FileWriter(file, true);
 	    			fileWriter.write(sb.toString());
 	    			fileWriter.close();
+	    			JSONObject object = new JSONObject();
+	    			object.put("res", 0);
+	    			out.print(object);
 	    		}catch (Exception e) {
 	    			e.printStackTrace();
 	    		}		
@@ -113,6 +117,9 @@ public class Upload extends HttpServlet {
         } catch (Exception e) {  
         	e.printStackTrace();  
         }  
+		JSONObject object = new JSONObject();
+		object.put("res", -1);
+		out.print(object);
         out.close();
     }
     public static void main(String[] argv){
