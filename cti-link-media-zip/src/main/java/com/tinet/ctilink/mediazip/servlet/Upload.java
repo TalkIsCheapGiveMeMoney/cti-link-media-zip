@@ -92,7 +92,11 @@ public class Upload extends HttpServlet {
 	            sb.append("wav_file=").append(fileName).append("\n");
 	            sb.append("ratio=").append(ratio).append("\n");
 	            sb.append("type=").append(type).append("\n");
-	            sb.append("aws_s3_path=").append(MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET).append("\n");
+	            if(MediaZipMacro.MODE.equals("aws")){
+	            	sb.append("upload_path=").append(MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET).append("\n");
+	            }else{
+	            	sb.append("upload_path=").append(MediaZipMacro.NFS_MEDIA_PATH).append("\n");
+	            }
 	            
 	            File file =new File(MediaZipConst.MONITOR_PATH + "/" + fileName.substring(0, fileName.indexOf(".wav")));
 	            try{

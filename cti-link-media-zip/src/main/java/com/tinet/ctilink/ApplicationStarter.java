@@ -36,6 +36,11 @@ public class ApplicationStarter implements ApplicationListener<ContextRefreshedE
 		//System.out.println("SQS URL:" + MediaZipMacro.AWS_MEDIA_ZIP_SQS_URL);
 		MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET = PropertyUtil.getProperty(MediaZipConst.PROPERTY_AWS_MEDIA_S3_BUCKET);
 		System.out.println("S3 bucket:" + MediaZipMacro.AWS_MEDIA_ZIP_S3_BUCKET);
+		MediaZipMacro.NFS_MEDIA_PATH = PropertyUtil.getProperty(MediaZipConst.PROPERTY_NFS_MEDIA_PATH);
+		System.out.println("nfs path:" + MediaZipMacro.NFS_MEDIA_PATH);
+		MediaZipMacro.MODE = PropertyUtil.getProperty(MediaZipConst.PROPERTY_MODE);
+		System.out.println("mode:" + MediaZipMacro.MODE);
+		
 		logger.info("cti-link-media-zip启动成功");
 		System.out.println("cti-link-media-zip启动成功");
 	}

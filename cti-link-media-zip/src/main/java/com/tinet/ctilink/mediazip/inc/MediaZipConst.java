@@ -8,4 +8,7 @@ public class MediaZipConst {
 	public static int MAX_FILE_SIZE = 1024*1024*100; //100MB 约104分钟
 	//public static String PROPERTY_AWS_MEDIA_ZIP_SQS_URL = "aws.mediaZip.sqs.url";
 	public static String PROPERTY_AWS_MEDIA_S3_BUCKET = "aws.mediaZip.s3.bucket";
+	
+	public static String PROPERTY_NFS_MEDIA_PATH = "nfs.mediaZip.path";
+	public static String PROPERTY_MODE = "mode";
 }

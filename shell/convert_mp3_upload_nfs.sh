@@ -2,7 +2,7 @@
 #
 #从monitor转成mp3并上传，同时移动到backup目录
 # 启动方式：
-# nohup /usr/local/bin/convert_mp3_upload_s3.sh >/dev/null 2>&1 &
+# nohup /usr/local/bin/convert_mp3_upload_nfs.sh >/dev/null 2>&1 &
 #########################################################
 
 #!/bin/bash
@@ -37,23 +37,24 @@ do_one(){
         enterprise_id=`cat ${monitor_path}/${monitor_file}|grep enterprise_id|awk -F '=' '{print $2}'`
         wav_file=`cat ${monitor_path}/${monitor_file}|grep wav_file|awk -F '=' '{print $2}'`
         ratio=`cat ${monitor_path}/${monitor_file}|grep ratio|awk -F '=' '{print $2}'`
-        aws_s3_path=`cat ${monitor_path}/${monitor_file}|grep upload_path|awk -F '=' '{print $2}'`
+        nfs_path=`cat ${monitor_path}/${monitor_file}|grep upload_path|awk -F '=' '{print $2}'`
         type=`cat ${monitor_path}/${monitor_file}|grep type|awk -F '=' '{print $2}'`
         file_name=${monitor_file}
 
-        echo "`date +%Y-%m-%d@%H:%M:%S` - ${file_name} ${day} ${path} ${enterprise_id} ${wav_file} ${ratio} ${type} ${aws_s3_path}"
+        echo "`date +%Y-%m-%d@%H:%M:%S` - ${file_name} ${day} ${path} ${enterprise_id} ${wav_file} ${ratio} ${type} ${nfs_path}"
         if [ -f ${wav_path}/${wav_file} ]; then 
 
             result=`/usr/local/bin/lame -b ${ratio} ${wav_path}/${wav_file} ${mp3_path}/${file_name}.mp3 2>&1`
             if [ $? -eq 0 ]; then
                 echo "lame result:$?"
                 if test -f ${mp3_path}/${file_name}.mp3 ; then
-                    aws s3 cp ${mp3_path}/${file_name}.mp3 s3://${aws_s3_path}/${day}/${type}/${enterprise_id}/${file_name}.mp3
+                    mkdir -p ${nfs_path}/${day}/${type}/${enterprise_id}
+                    cp -f ${mp3_path}/${file_name}.mp3 ${nfs_path}/${day}/${type}/${enterprise_id}/${file_name}.mp3
                     if [ $? -eq 0 ]; then
-                        echo "s3 cp result:$?" 
+                        echo "nfs cp result:$?" 
                         rm -f ${mp3_path}/${file_name}.mp3
                     else
-                        echo "upload to s3 failed file=${mp3_path}${file_name}.mp3" 
+                        echo "upload to nfs failed file=${mp3_path}${file_name}.mp3" 
                         mv ${mp3_path}/${file_name}.mp3 ${not_upload_nfs_mp3_path}/${file_name}.mp3
                     fi
                     rm -f ${wav_path}/${wav_file}
@@ -71,7 +72,7 @@ do_one(){
 	rm -f ${monitor_path}/${monitor_file}
 }
 
-convert_mp3_upload_s3() {
+convert_mp3_upload_nfs() {
     for monitor_file in $(ls ${monitor_path} | head -n 100)
     do
 	if [ ${loop_index} -lt ${convert_core_count} ]; then
@@ -87,7 +88,7 @@ convert_mp3_upload_s3() {
 
 while :
 do
-    convert_mp3_upload_s3 >> ${log_path}/convert_mp3_upload_s3.$(date +%Y%m%d).log
+    convert_mp3_upload_nfs >> ${log_path}/convert_mp3_upload_nfs.$(date +%Y%m%d).log
     sleep 0.5
 done
 
